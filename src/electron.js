@@ -5,6 +5,12 @@ let mainWindow
 
 function createWindow() {
     mainWindow = new BrowserWindow({
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false,
+            enableRemoteModule: true,
+            preload: __dirname + '\\preload.js'
+        },
         width: 900,
         height: 680,
     })

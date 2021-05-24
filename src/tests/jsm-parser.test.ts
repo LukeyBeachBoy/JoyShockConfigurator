@@ -1,8 +1,7 @@
 import { expect, test, describe } from '@jest/globals';
-import { ButtonBinding } from './button-binding';
-import { Buttons } from './buttons';
-import './jsm-parser';
-import { JsmParser } from './jsm-parser';
+import { ButtonBinding } from '../lib/button-binding';
+import { Buttons } from '../lib/buttons';
+import { JsmParser } from '../lib/jsm-parser';
 
 const parser = new JsmParser();
 const exampleFileLines = {
@@ -44,7 +43,14 @@ describe('📩 JSM files can be parsed into ButtonBinding objects', () => {
 describe('📤 ButtonBinding objects can be outputted into JSM format', () => {
     test('Simple button press is correctly formatted', () => {
         const pressBinding = new ButtonBinding({ button: Buttons.MIC, press: 'MUTE' });
+
         expect(pressBinding.toJSM()).toBe('MIC = MUTE');
+    });
+
+    test('Hold press is correctly formatted and has different command to simple press', () => {
+        const pressWithHoldBinding = new ButtonBinding({ button: Buttons.N, press: '1', hold: '2' });
+
+        expect(pressWithHoldBinding.toJSM()).toBe('N = 1 2');
     });
 });
 

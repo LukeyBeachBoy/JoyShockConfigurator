@@ -1,6 +1,5 @@
 import { ButtonBinding } from "./button-binding";
-import { Buttons } from "./buttons";
-
+import { Buttons } from "./buttons"; 
 export class JsmParser {
     // Remove whitespace and split string by punctuation e.g W = GYRO_OFF #Turns off gyro when holding square -> {button: w, command: GYRO_OFF, comments: 'Turns off gyro when holding square'}
     parseLine(line: string) {
