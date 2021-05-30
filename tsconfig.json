@@ -1,5 +1,13 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "moduleResolution": "Node",
+    "types": [
+      "node",
+      "svelte"
+    ]
+  },
   "include": [
     "src/**/*",
     "test/jsm-parser.test.ts"

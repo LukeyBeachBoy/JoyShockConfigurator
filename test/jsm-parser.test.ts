@@ -1,8 +1,8 @@
-import { expect, test, describe } from '@jest/globals';
-import type { ButtonBinding } from '../src/button-binding';
-import { Buttons } from '../src/buttons';
+import {expect, test, describe} from '@jest/globals';
+import type {ButtonBinding} from '../src/lib/button-binding';
+import {Buttons} from '../src/lib/buttons';
 import '../src/jsm-parser';
-import { JsmParser } from '../src/jsm-parser';
+import {JsmParser} from '../src/lib/jsm-parser';
 
 const parser = new JsmParser();
 const exampleFileLines = {

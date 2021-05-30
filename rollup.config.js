@@ -1,11 +1,13 @@
 import svelte from 'rollup-plugin-svelte';
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
+import nodePolyfills from 'rollup-plugin-node-polyfills';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import sveltePreprocess from 'svelte-preprocess';
 import typescript from '@rollup/plugin-typescript';
 import css from 'rollup-plugin-css-only';
+import inlineSvg from 'rollup-plugin-inline-svg';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -34,11 +36,13 @@ export default {
 	input: 'src/main.ts',
 	output: {
 		sourcemap: true,
-		format: 'iife',
+		exports: 'auto',
+		format: 'cjs',
 		name: 'app',
 		file: 'public/build/bundle.js'
 	},
 	plugins: [
+		inlineSvg(),
 		svelte({
 			preprocess: sveltePreprocess({ sourceMap: !production }),
 			compilerOptions: {
@@ -59,6 +63,7 @@ export default {
 			browser: true,
 			dedupe: ['svelte']
 		}),
+		nodePolyfills(),
 		commonjs(),
 		typescript({
 			sourceMap: !production,
