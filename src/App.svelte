@@ -24,6 +24,8 @@
         height: 100%;
         width: 100%;
         margin: 0 auto;
+        background: rgb(9,73,100);
+        background: radial-gradient(circle, rgba(9,73,100,1) 4%, rgba(14,38,63,1) 40%, rgba(8,15,32,1) 95%);
     }
 
     h1 {

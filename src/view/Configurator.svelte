@@ -61,33 +61,112 @@
 
 	function loadConfig({ detail: file }) {
 		config = new JsmParser().parseConfigFile(readFileSync(file, { encoding: 'utf8' }));
+		console.log(config);
 		selectConfig = false;
 	}
 
 </script>
 
 <div class="menu">
-    <button on:click={() => (selectConfig = true)}>Load config</button>
+    <button class="btn" on:click={() => (selectConfig = true)}>Load config</button>
 </div>
 {#if selectConfig}
     <FileNavigator on:configSelected={loadConfig}/>
 {:else}
     <div class="container">
+        <div class="binding-label left-trigger">Left Trigger</div>
+        <div class="binding-label right-trigger">Right Trigger</div>
+        <div class="binding-label left-bumper">Left Bumper</div>
+        <div class="binding-label right-bumper">Right Bumper</div>
+        <div class="binding-label select">Select</div>
+        <div class="binding-label start">Start</div>
+        <div class="binding-box dpad">Dpad</div>
+        <div class="binding-box left-joystick">Left Joystick</div>
+        <div class="binding-box right-joystick">Right Joystick</div>
+        <div class="binding-box face-buttons">Facebuttons</div>
         <InlineSVG src="assets/{controller}.svg"/>
     </div>
 {/if}
 
 <style global lang="scss">
+
+  .menu {
+    z-index: 2;
+    display: flex;
+    padding: 8px;
+  }
+
   .container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     flex: 1 1 auto;
   }
+  
+  .binding-label, .binding-box {
+    position: absolute;
+    color: #01c9ee;
+  }
+  
+  .left-trigger {
+    left: 10%;
+    top: 20%;
+  }
+  
+  .right-trigger {
+    right: 10%;
+    top: 20%;
+  }
+  
+  .left-bumper {
+    left: 10%;
+    top: 25%;
+  }
+  
+  .right-bumper {
+    right: 10%;
+    top: 25%;
+  }
+  
+  .select {
+    left: 10%;
+    top: 30%;
+  }
+  
+  .start {
+    right: 10%;
+    top: 30%;
+  }
+  
+  .dpad {
+    left: 10%;
+    top: 85%;
+  }
+  
+  .left-joystick {
+    left: 32.5%;
+    top: 85%;
+  }
+  
+  .right-joystick {
+    right: 32.5%;
+    top: 85%;
+  }
+  
+  .face-buttons {
+    right: 10%;
+    top: 85%;
+  }
 
   svg {
-    max-width: 100%;
+    max-width: 50%;
+    max-height: 50%;
     height: auto;
   }
 

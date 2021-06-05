@@ -11,6 +11,8 @@ function createWindow() {
 			enableRemoteModule: true,
 			preload: __dirname + '\\preload.js'
 		},
+		minWidth: 755,
+		minHeight: 625,
 		width: 900,
 		height: 680,
 	});
