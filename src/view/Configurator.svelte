@@ -4,7 +4,7 @@
 	import { readFileSync } from "fs";
 	import { BehaviorSubject, fromEvent } from "rxjs";
 	import { onDestroy, onMount } from "svelte";
-	import { filter, map, takeUntil } from "rxjs/operators";
+	import { filter, map, switchMap, takeUntil } from "rxjs/operators";
 	import clickHandler from '../lib/event-handlers/click';
 	import hoverHandler from '../lib/event-handlers/mouseover';
 	import mouseLeaveHandler from '../lib/event-handlers/mouseleave';
@@ -13,11 +13,11 @@
 
 	const controllerView = new BehaviorSubject<SVGElement>(null);
 	const destroyedController = new BehaviorSubject<boolean>(null);
+	const configController = new BehaviorSubject<ControllerConfiguration>({ bindings: {}, settings: {} });
 
 	const destroyed = destroyedController.pipe(filter(it => it === true));
 
 	let selectConfig = false;
-	let config: ControllerConfiguration;
 	let controller = "dualsense";
 
 	onMount(() => {
@@ -31,11 +31,18 @@
 		observer.observe(document.querySelector('.container'), { childList: true, subtree: true });
 	});
 
-	onDestroy(() => destroyedController.next(true));
+	onDestroy(() => {
+		destroyedController.next(true);
+		destroyedController.complete();
+		configController.complete();
+	});
 
 	$: {
 		if ($controllerView) {
 			addEventListeners($controllerView as SVGElement);
+		}
+		if ($configController) {
+			console.log($configController);
 		}
 	}
 
@@ -43,10 +50,7 @@
 		fromEvent(svgElement, 'click')
 			.pipe(
 				takeUntil(destroyed),
-				map(event => ({
-					event,
-					config
-				}))
+				switchMap(event => configController.pipe(map(it => ({ event, config: it }))))
 			)
 			.subscribe(clickHandler);
 
@@ -60,8 +64,8 @@
 	}
 
 	function loadConfig({ detail: file }) {
-		config = new JsmParser().parseConfigFile(readFileSync(file, { encoding: 'utf8' }));
-		console.log(config);
+		const parsed = new JsmParser().parseConfigFile(readFileSync(file, { encoding: 'utf8' }));
+		configController.next(parsed);
 		selectConfig = false;
 	}
 
@@ -74,17 +78,35 @@
     <FileNavigator on:configSelected={loadConfig}/>
 {:else}
     <div class="container">
-        <div class="binding-label left-trigger">Left Trigger</div>
-        <div class="binding-label right-trigger">Right Trigger</div>
-        <div class="binding-label left-bumper">Left Bumper</div>
-        <div class="binding-label right-bumper">Right Bumper</div>
-        <div class="binding-label select">Select</div>
-        <div class="binding-label start">Start</div>
-        <div class="binding-box dpad">Dpad</div>
-        <div class="binding-box left-joystick">Left Joystick</div>
-        <div class="binding-box right-joystick">Right Joystick</div>
-        <div class="binding-box face-buttons">Facebuttons</div>
-        <InlineSVG src="assets/{controller}.svg"/>
+        <section class="top-panel">
+            <section class="left-panel">
+                <div class="binding-label left-trigger">Left Trigger</div>
+                <div class="binding-label left-bumper">Left Bumper</div>
+                <div class="binding-label select">Select</div>
+            </section>
+            <InlineSVG src="assets/{controller}.svg"/>
+
+            <section class="right-panel">
+                <div class="binding-label right-trigger">Right Trigger</div>
+                <div class="binding-label right-bumper">Right Bumper</div>
+                <div class="binding-label start">Start</div>
+            </section>
+        </section>
+
+        <section class="bottom-panel">
+            <div class="binding-box dpad">
+                <p>DPAD</p>
+                {#if Object.keys(($configController).bindings).length !== 0}
+                    {#each Object.keys(($configController).bindings).filter(it => [ 'UP', 'DOWN', 'LEFT', 'RIGHT' ].includes(
+						it)) as binding}
+                        <p>{binding} => {$configController.bindings[binding]?.press}</p>
+                    {/each}
+                {/if}
+            </div>
+            <div class="binding-box left-joystick">Left Joystick</div>
+            <div class="binding-box right-joystick">Right Joystick</div>
+            <div class="binding-box face-buttons">Facebuttons</div>
+        </section>
     </div>
 {/if}
 
@@ -101,70 +123,37 @@
     top: 0;
     left: 0;
     width: 100%;
+    max-height: 100%;
+    overflow: hidden;
     height: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     flex: 1 1 auto;
   }
-  
+
+  .top-panel {
+    display: flex;
+  }
+
   .binding-label, .binding-box {
     position: absolute;
     color: #01c9ee;
   }
-  
-  .left-trigger {
-    left: 10%;
-    top: 20%;
+
+  .left-panel {
+    grid-area: LP;
   }
-  
-  .right-trigger {
-    right: 10%;
-    top: 20%;
+
+  .right-panel {
+    grid-area: RP;
   }
-  
-  .left-bumper {
-    left: 10%;
-    top: 25%;
-  }
-  
-  .right-bumper {
-    right: 10%;
-    top: 25%;
-  }
-  
-  .select {
-    left: 10%;
-    top: 30%;
-  }
-  
-  .start {
-    right: 10%;
-    top: 30%;
-  }
-  
-  .dpad {
-    left: 10%;
-    top: 85%;
-  }
-  
-  .left-joystick {
-    left: 32.5%;
-    top: 85%;
-  }
-  
-  .right-joystick {
-    right: 32.5%;
-    top: 85%;
-  }
-  
-  .face-buttons {
-    right: 10%;
-    top: 85%;
+
+  .bottom-panel {
+    grid-area: BP
   }
 
   svg {
+    grid-area: controller;
     max-width: 50%;
     max-height: 50%;
     height: auto;
