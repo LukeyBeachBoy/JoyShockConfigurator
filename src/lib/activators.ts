@@ -1,4 +1,4 @@
-export enum Buttons {
+export enum Activators {
     UP = "UP",
     DOWN = "DOWN",
     LEFT = "LEFT",
@@ -41,5 +41,5 @@ export enum Buttons {
     LEAN_LEFT = "LEAN_LEFT",
     LEAN_RIGHT = "LEAN_RIGHT",
     TOUCH = "TOUCH",
-    MIC = "MIC"
+    MIC = "MIC",
 }

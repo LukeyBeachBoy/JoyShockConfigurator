@@ -8,6 +8,7 @@ import sveltePreprocess from 'svelte-preprocess';
 import typescript from '@rollup/plugin-typescript';
 import css from 'rollup-plugin-css-only';
 import inlineSvg from 'rollup-plugin-inline-svg';
+import postcssNesting from 'postcss-nesting';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -15,14 +16,18 @@ function serve() {
 	let server;
 
 	function toExit() {
-		if (server) server.kill(0);
+		if (server) {
+			server.kill(0);
+		}
 	}
 
 	return {
 		writeBundle() {
-			if (server) return;
-			server = require('child_process').spawn('npm', ['run', 'start', '--', '--dev'], {
-				stdio: ['ignore', 'inherit', 'inherit'],
+			if (server) {
+				return;
+			}
+			server = require('child_process').spawn('npm', [ 'run', 'start', '--', '--dev' ], {
+				stdio: [ 'ignore', 'inherit', 'inherit' ],
 				shell: true
 			});
 
@@ -44,7 +49,7 @@ export default {
 	plugins: [
 		inlineSvg(),
 		svelte({
-			preprocess: sveltePreprocess({ sourceMap: !production }),
+			preprocess: sveltePreprocess({ sourceMap: !production, postcss: { plugins: [ postcssNesting() ] } }),
 			compilerOptions: {
 				// enable run-time checks when not in production
 				dev: !production
@@ -61,7 +66,7 @@ export default {
 		// https://github.com/rollup/plugins/tree/master/packages/commonjs
 		resolve({
 			browser: true,
-			dedupe: ['svelte']
+			dedupe: [ 'svelte' ]
 		}),
 		nodePolyfills(),
 		commonjs(),
