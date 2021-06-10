@@ -6,8 +6,6 @@
 	import { onDestroy, onMount } from "svelte";
 	import { filter, map, switchMap, takeUntil } from "rxjs/operators";
 	import clickHandler from '../lib/event-handlers/click';
-	import hoverHandler from '../lib/event-handlers/mouseover';
-	import mouseLeaveHandler from '../lib/event-handlers/mouseleave';
 	import type { ControllerConfiguration } from "../lib/controller-configuration";
 	import { JsmParser } from "../lib/jsm-parser";
 
@@ -21,10 +19,12 @@
 	let controller = "dualsense";
 
 	onMount(() => {
-		const observer = new MutationObserver((mutationsList) => {
+		const observer = new MutationObserver((mutationsList, self) => {
 			if (mutationsList.some((mutation) => mutation.type === 'childList' && mutation.target.nodeName === 'svg')) {
-				console.log('added controller view');
-				controllerView.next(document.getElementById('controller-view') as SVGElement);
+				const controllerSvg = document.getElementById('controller-view') as SVGElement;
+                addEventListeners(controllerSvg);
+				controllerView.next(controllerSvg);
+				self.disconnect();
 			}
 		});
 
@@ -37,15 +37,6 @@
 		configController.complete();
 	});
 
-	$: {
-		if ($controllerView) {
-			addEventListeners($controllerView as SVGElement);
-		}
-		if ($configController) {
-			console.log($configController);
-		}
-	}
-
 	function addEventListeners(svgElement: SVGElement) {
 		fromEvent(svgElement, 'click')
 			.pipe(
@@ -53,14 +44,6 @@
 				switchMap(event => configController.pipe(map(it => ({ event, config: it }))))
 			)
 			.subscribe(clickHandler);
-
-		fromEvent(svgElement, 'mouseover')
-			.pipe(takeUntil(destroyed))
-			.subscribe(hoverHandler);
-
-		fromEvent(svgElement, 'mouseout')
-			.pipe(takeUntil(destroyed))
-			.subscribe(mouseLeaveHandler);
 	}
 
 	function loadConfig({ detail: file }) {
@@ -78,6 +61,7 @@
     <FileNavigator on:configSelected={loadConfig}/>
 {:else}
     <div class="container">
+        <div class="spacer"></div>
         <section class="top-panel">
             <section class="left-panel">
                 <div class="binding-label left-trigger">Left Trigger</div>
@@ -95,7 +79,7 @@
 
         <section class="bottom-panel">
             <div class="binding-box dpad">
-                <p>DPAD</p>
+                DPAD
                 {#if Object.keys(($configController).bindings).length !== 0}
                     {#each Object.keys(($configController).bindings).filter(it => [ 'UP', 'DOWN', 'LEFT', 'RIGHT' ].includes(
 						it)) as binding}
@@ -120,48 +104,78 @@
 
   .container {
     position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     max-height: 100%;
     overflow: hidden;
     height: 100%;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
     flex: 1 1 auto;
+  }
+
+  .spacer {
+    flex: 1 1 auto;
+  }
+
+  .binding-label, .binding-box {
+    color: #01c9ee;
+  }
+
+  .binding-label {
+    padding: 25px;
+    border-radius: 10px;
+    &:hover {
+      box-shadow: 0 0 12px 0px;
+      background: #ffffff14;
+    }
+  }
+
+  .binding-box {
+    padding: 14px;
+    margin: 8px;
+    background: #80808038;
+    border-radius: 8px;
+    display: flex;
+    flex: 1;
   }
 
   .top-panel {
     display: flex;
-  }
+    flex: 1;
 
-  .binding-label, .binding-box {
-    position: absolute;
-    color: #01c9ee;
-  }
+    .left-panel {
+      text-align: left;
+      flex: 1;
+    }
 
-  .left-panel {
-    grid-area: LP;
-  }
-
-  .right-panel {
-    grid-area: RP;
+    .right-panel {
+      flex: 1;
+      text-align: right;
+    }
   }
 
   .bottom-panel {
-    grid-area: BP
+    width: 100%;
+    margin-top: 50px;
+    display: flex;
+    flex: 1;
   }
 
   svg {
-    grid-area: controller;
-    max-width: 50%;
-    max-height: 50%;
+    flex: 2;
+    max-width: 70%;
+    max-height: 100%;
     height: auto;
   }
 
   .activator {
-    &:hover .fill {
-      fill: blue;
+    &:hover .outline {
+      stroke: #0082ff;
+      &__thick {
+        stroke-width: 5px;
+      }
     }
   }
 </style>

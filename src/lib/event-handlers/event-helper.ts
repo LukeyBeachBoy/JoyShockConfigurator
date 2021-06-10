@@ -1,4 +1,4 @@
-import { Activators } from "../activators";
+import { Activators, activatorsList } from "../activators";
 
 export class EventHelper {
 	static getButtonFromEvent(event: Event) {
@@ -6,7 +6,7 @@ export class EventHelper {
 		let button;
 		if (target.id in Activators) {
 			button = target;
-		} else if (target.parentElement.id in Activators) {
+		} else if (activatorsList.includes(target.parentElement.id)) {
 			button = target.parentElement;
 		}
 		return button;

@@ -42,9 +42,9 @@ export default {
 	output: {
 		sourcemap: true,
 		exports: 'auto',
-		format: 'cjs',
+		format: 'esm',
+		dir: 'public/build',
 		name: 'app',
-		file: 'public/build/bundle.js'
 	},
 	plugins: [
 		inlineSvg(),
