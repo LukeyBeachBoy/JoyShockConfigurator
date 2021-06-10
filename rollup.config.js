@@ -42,8 +42,8 @@ export default {
 	output: {
 		sourcemap: true,
 		exports: 'auto',
-		format: 'esm',
-		dir: 'public/build',
+		format: 'cjs',
+		file: 'public/build/bundle.js',
 		name: 'app',
 	},
 	plugins: [

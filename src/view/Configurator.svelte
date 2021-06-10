@@ -1,13 +1,14 @@
 <script lang="ts">
 	import FileNavigator from "./FileNavigator.svelte";
-	import InlineSVG from "svelte-inline-svg";
 	import { readFileSync } from "fs";
-	import { BehaviorSubject, fromEvent } from "rxjs";
-	import { onDestroy, onMount } from "svelte";
-	import { filter, map, switchMap, takeUntil } from "rxjs/operators";
-	import clickHandler from '../lib/event-handlers/click';
+	import { BehaviorSubject } from "rxjs";
+	import { onDestroy } from "svelte";
+	import { filter } from "rxjs/operators";
 	import type { ControllerConfiguration } from "../lib/controller-configuration";
 	import { JsmParser } from "../lib/jsm-parser";
+	import DualsenseController from "../lib/controller-components/DualsenseController.svelte";
+	import { EventHelper } from "../lib/event-handlers/event-helper";
+	import { Activators } from "../lib/activators";
 
 	const controllerView = new BehaviorSubject<SVGElement>(null);
 	const destroyedController = new BehaviorSubject<boolean>(null);
@@ -18,32 +19,18 @@
 	let selectConfig = false;
 	let controller = "dualsense";
 
-	onMount(() => {
-		const observer = new MutationObserver((mutationsList, self) => {
-			if (mutationsList.some((mutation) => mutation.type === 'childList' && mutation.target.nodeName === 'svg')) {
-				const controllerSvg = document.getElementById('controller-view') as SVGElement;
-                addEventListeners(controllerSvg);
-				controllerView.next(controllerSvg);
-				self.disconnect();
-			}
-		});
-
-		observer.observe(document.querySelector('.container'), { childList: true, subtree: true });
-	});
-
 	onDestroy(() => {
 		destroyedController.next(true);
 		destroyedController.complete();
 		configController.complete();
 	});
 
-	function addEventListeners(svgElement: SVGElement) {
-		fromEvent(svgElement, 'click')
-			.pipe(
-				takeUntil(destroyed),
-				switchMap(event => configController.pipe(map(it => ({ event, config: it }))))
-			)
-			.subscribe(clickHandler);
+	function onClick(event: MouseEvent) {
+		const config = $configController as ControllerConfiguration;
+		const button = EventHelper.getButtonFromEvent(event);
+		if (!button) return;
+
+		console.log(config.bindings[Activators[button.id]]);
 	}
 
 	function loadConfig({ detail: file }) {
@@ -68,7 +55,7 @@
                 <div class="binding-label left-bumper">Left Bumper</div>
                 <div class="binding-label select">Select</div>
             </section>
-            <InlineSVG src="assets/{controller}.svg"/>
+            <DualsenseController on:click={onClick} src="assets/{controller}.svg"/>
 
             <section class="right-panel">
                 <div class="binding-label right-trigger">Right Trigger</div>
@@ -126,6 +113,7 @@
   .binding-label {
     padding: 25px;
     border-radius: 10px;
+
     &:hover {
       box-shadow: 0 0 12px 0px;
       background: #ffffff14;
@@ -173,6 +161,7 @@
   .activator {
     &:hover .outline {
       stroke: #0082ff;
+
       &__thick {
         stroke-width: 5px;
       }
